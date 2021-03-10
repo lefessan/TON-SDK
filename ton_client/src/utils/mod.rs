@@ -16,9 +16,11 @@
 mod tests;
 
 pub(crate) mod conversion;
+pub(crate) mod compression;
 mod errors;
 
 pub use conversion::{
     convert_address, AddressStringFormat, ParamsOfConvertAddress, ResultOfConvertAddress,
 };
+pub use compression::{compress, decompress};
 pub use errors::{Error, ErrorCode};

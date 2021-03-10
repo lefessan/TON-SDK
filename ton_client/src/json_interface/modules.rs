@@ -450,6 +450,8 @@ fn register_utils(handlers: &mut RuntimeHandlers) {
         crate::utils::convert_address,
         crate::utils::conversion::convert_address_api,
     );
+    module.register_async_fn(crate::utils::compress, crate::utils::compression::compress_api);
+    module.register_async_fn(crate::utils::decompress, crate::utils::compression::decompress_api);
     module.register();
 }
 

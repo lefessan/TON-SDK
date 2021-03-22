@@ -22,5 +22,5 @@ mod errors;
 pub use conversion::{
     convert_address, AddressStringFormat, ParamsOfConvertAddress, ResultOfConvertAddress,
 };
-pub use compression::{compress, decompress};
+pub use compression::{compress, decompress, compress_zstd, decompress_zstd};
 pub use errors::{Error, ErrorCode};

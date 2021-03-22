@@ -155,6 +155,10 @@ Where:
 
 [convert_address](mod_utils.md#convert_address) – Converts address from any TON format to any TON format
 
+[compress](mod_utils.md#compress) – Compresses data using Zstandard algorithm
+
+[decompress](mod_utils.md#decompress) – Decompresses data using Zstandard algorithm
+
 ## [tvm](mod_tvm.md)
 
 [run_executor](mod_tvm.md#run_executor) – Emulates all the phases of contract execution locally

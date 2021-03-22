@@ -23,7 +23,7 @@ use ton_types::SliceData;
 
 //------------------------------------------------------------------------------------------------------
 
-pub(crate) fn account_encode(value: &MsgAddressInt) -> String {
+pub fn account_encode(value: &MsgAddressInt) -> String {
     value.to_string()
 }
 
@@ -59,7 +59,7 @@ pub(crate) fn account_encode_ex(
     }
 }
 
-pub(crate) fn account_decode(string: &str) -> ClientResult<MsgAddressInt> {
+pub fn account_decode(string: &str) -> ClientResult<MsgAddressInt> {
     match MsgAddressInt::from_str(string) {
         Ok(address) => Ok(address),
         Err(_) if string.len() == 48 => decode_std_base64(string),

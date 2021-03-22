@@ -70,12 +70,12 @@ pub async fn fetch_next_shard_block<F: futures::Future<Output = ()> + Send>(
 }
 
 #[derive(Deserialize)]
-pub(crate) struct MessageBoc {
+pub struct MessageBoc {
     pub boc: String,
 }
 
 #[derive(Deserialize)]
-pub(crate) struct TransactionBoc {
+pub struct TransactionBoc {
     pub boc: String,
     pub out_messages: Vec<MessageBoc>,
 }

@@ -12,12 +12,12 @@
  *
  */
 
-pub(crate) mod call_tvm;
-pub(crate) mod check_transaction;
+pub mod call_tvm;
+pub mod check_transaction;
 mod errors;
-pub(crate) mod run_get;
-pub(crate) mod run_message;
-pub(crate) mod types;
+pub mod run_get;
+pub mod run_message;
+pub mod types;
 
 mod stack;
 #[cfg(test)]

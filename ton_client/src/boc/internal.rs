@@ -47,7 +47,7 @@ pub(crate) fn deserialize_object_from_cell<S: Deserializable>(
         .map_err(|err| Error::invalid_boc(format!("cannot deserialize {} from BOC: {}", name, err)))
 }
 
-pub(crate) enum DeserializedBoc {
+pub enum DeserializedBoc {
     Cell(ton_types::Cell),
     Bytes(Vec<u8>),
 }
@@ -61,13 +61,13 @@ impl DeserializedBoc {
     }
 }
 
-pub(crate) struct DeserializedObject<S: Deserializable> {
+pub struct DeserializedObject<S: Deserializable> {
     pub boc: DeserializedBoc,
     pub cell: ton_types::Cell,
     pub object: S,
 }
 
-pub(crate) fn deserialize_object_from_base64<S: Deserializable>(
+pub fn deserialize_object_from_base64<S: Deserializable>(
     b64: &str,
     name: &str,
 ) -> ClientResult<DeserializedObject<S>> {

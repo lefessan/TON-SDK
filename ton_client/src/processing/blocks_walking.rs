@@ -31,7 +31,7 @@ pub const BLOCK_FIELDS: &str = r#"
     }
 "#;
 
-pub async fn find_last_shard_block(
+pub(crate) async fn find_last_shard_block(
     context: &Arc<ClientContext>,
     address: &MsgAddressInt,
     endpoint: Option<Endpoint>,
@@ -143,6 +143,14 @@ pub async fn find_last_shard_block(
                 .ok_or(Error::invalid_data("No `root_hash` field in shard descr"))
         }
     }
+}
+
+// added because Endpoint is crate private 
+pub async fn find_last_shard_block_pub(
+    context: &Arc<ClientContext>,
+    address: &MsgAddressInt,
+) -> ClientResult<ton_sdk::BlockId> {
+    find_last_shard_block( context, address, None ).await
 }
 
 pub async fn wait_next_block(

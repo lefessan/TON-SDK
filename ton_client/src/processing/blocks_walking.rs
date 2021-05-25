@@ -31,7 +31,7 @@ pub const BLOCK_FIELDS: &str = r#"
     }
 "#;
 
-pub(crate) async fn find_last_shard_block(
+pub async fn find_last_shard_block(
     context: &Arc<ClientContext>,
     address: &MsgAddressInt,
     endpoint: Option<Endpoint>,

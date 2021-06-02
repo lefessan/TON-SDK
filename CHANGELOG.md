@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.16.0] – 2021-05-25
+
+### New
+
+- `query_transaction_tree` function that returns messages and transactions tree produced 
+  by the specified message was added to `query` module. [See the documentation](docs/mod_net.md#query_transaction_tree)
+
+### Fixed
+
+- `AbiData.key` type changed to u32.
+- attempt to use `orderBy` instead of `order` in `query_collection` will raise error.
+
+## [1.15.0] – 2021-05-18
+
+### New
+
+- Sync latency detection increases connection reliability. Library will change the current endpoint 
+  when it detects data sync latency on it.
+  
+- Configuration parameters: `latency_detection_interval`, 
+  `max_latency`. See client documentation for details. 
+
+- **Debot module**:
+    - signing messages with signing box handles returned from debots.
+    - return any sdk errors to debot in case of external calls.
+    - defining signing box handle used to sign message in approve callback.
+
 ## [1.14.1] – 2021-04-29
 
 ### Fixed

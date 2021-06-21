@@ -2,6 +2,49 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.16.1] – 2021-06-16
+
+### New
+- `timeout` option to `query_transaction_tree` – timeout used to limit waiting time for the next 
+  message and transaction in the transaction tree.
+  
+### Improved
+
+- Improved error messages regarding ABI and JSON interface. SDK now shows additional tips for the user in cases of 
+  errors.
+
+### Fixed
+- Warnings in Rust 1.52+. Little fixes in the documentation.
+- `total_output` field in fees was always 0.
+- `query_transaction_tree` didn't wait for messages.
+
+## [1.16.0] – 2021-05-25
+
+### New
+
+- `query_transaction_tree` function that returns messages and transactions tree produced 
+  by the specified message was added to `net` module. [See the documentation](docs/mod_net.md#query_transaction_tree)
+
+### Fixed
+
+- `AbiData.key` type changed to u32.
+- attempt to use `orderBy` instead of `order` in `query_collection` will raise error.
+
+## [1.15.0] – 2021-05-18
+
+### New
+
+- Sync latency detection increases connection reliability. Library will change the current endpoint 
+  when it detects data sync latency on it.
+  
+- Configuration parameters: `latency_detection_interval`, 
+  `max_latency`. See client documentation for details. 
+
+- **Debot module**:
+    - signing messages with signing box handles returned from debots.
+    - return any sdk errors to debot in case of external calls.
+    - defining signing box handle used to sign message in approve callback.
+
 ## [1.14.1] – 2021-04-29
 
 ### Fixed

@@ -28,7 +28,11 @@ Network access.
 
 [set_endpoints](#set_endpoints) – Sets the list of endpoints to use on reinit
 
+[get_endpoints](#get_endpoints) – Requests the list of alternative endpoints from server
+
 [query_counterparties](#query_counterparties) – Allows to query and paginate through the list of accounts that the specified account has interacted with, sorted by the time of the last internal message between accounts
+
+[query_transaction_tree](#query_transaction_tree) – Returns transactions tree for specific message.
 
 ## Types
 [NetErrorCode](#NetErrorCode)
@@ -42,6 +46,10 @@ Network access.
 [FieldAggregation](#FieldAggregation)
 
 [AggregationFn](#AggregationFn)
+
+[TransactionNode](#TransactionNode)
+
+[MessageNode](#MessageNode)
 
 [ParamsOfQuery](#ParamsOfQuery)
 
@@ -73,7 +81,13 @@ Network access.
 
 [EndpointsSet](#EndpointsSet)
 
+[ResultOfGetEndpoints](#ResultOfGetEndpoints)
+
 [ParamsOfQueryCounterparties](#ParamsOfQueryCounterparties)
+
+[ParamsOfQueryTransactionTree](#ParamsOfQueryTransactionTree)
+
+[ResultOfQueryTransactionTree](#ResultOfQueryTransactionTree)
 
 
 # Functions
@@ -416,6 +430,26 @@ function set_endpoints(
 - `endpoints`: _string[]_ – List of endpoints provided by server
 
 
+## get_endpoints
+
+Requests the list of alternative endpoints from server
+
+```ts
+type ResultOfGetEndpoints = {
+    query: string,
+    endpoints: string[]
+}
+
+function get_endpoints(): Promise<ResultOfGetEndpoints>;
+```
+
+
+### Result
+
+- `query`: _string_ – Current query endpoint
+- `endpoints`: _string[]_ – List of all endpoints used by client
+
+
 ## query_counterparties
 
 Allows to query and paginate through the list of accounts that the specified account has interacted with, sorted by the time of the last internal message between accounts
@@ -450,6 +484,54 @@ function query_counterparties(
 ### Result
 
 - `result`: _any[]_ – Objects that match the provided criteria
+
+
+## query_transaction_tree
+
+Returns transactions tree for specific message.
+
+Performs recursive retrieval of the transactions tree produced by the specific message:
+in_msg -> dst_transaction -> out_messages -> dst_transaction -> ...
+
+All retrieved messages and transactions will be included
+into `result.messages` and `result.transactions` respectively.
+
+The retrieval process will stop when the retrieved transaction count is more than 50.
+
+It is guaranteed that each message in `result.messages` has the corresponding transaction
+in the `result.transactions`.
+
+But there are no guaranties that all messages from transactions `out_msgs` are
+presented in `result.messages`.
+So the application have to continue retrieval for missing messages if it requires.
+
+```ts
+type ParamsOfQueryTransactionTree = {
+    in_msg: string,
+    abi_registry?: Abi[],
+    timeout?: number
+}
+
+type ResultOfQueryTransactionTree = {
+    messages: MessageNode[],
+    transactions: TransactionNode[]
+}
+
+function query_transaction_tree(
+    params: ParamsOfQueryTransactionTree,
+): Promise<ResultOfQueryTransactionTree>;
+```
+### Parameters
+- `in_msg`: _string_ – Input message id.
+- `abi_registry`?: _[Abi](mod_abi.md#Abi)[]_ – List of contract ABIs that will be used to decode message bodies. Library will try to decode each returned message body using any ABI from the registry.
+- `timeout`?: _number_ – Timeout used to limit waiting time for the missing messages and transaction.
+<br>If some of the following messages and transactions are missing yet<br>The maximum waiting time is regulated by this option.<br><br>Default value is 60000 (1 min).
+
+
+### Result
+
+- `messages`: _[MessageNode](mod_net.md#MessageNode)[]_ – Messages.
+- `transactions`: _[TransactionNode](mod_net.md#TransactionNode)[]_ – Transactions.
 
 
 # Types
@@ -594,6 +676,53 @@ One of the following value:
 - `MAX = "MAX"` – Returns the maximal value for a field in filtered records
 - `SUM = "SUM"` – Returns a sum of values for a field in filtered records
 - `AVERAGE = "AVERAGE"` – Returns an average value for a field in filtered records
+
+
+## TransactionNode
+```ts
+type TransactionNode = {
+    id: string,
+    in_msg: string,
+    out_msgs: string[],
+    account_addr: string,
+    total_fees: string,
+    aborted: boolean,
+    exit_code?: number
+}
+```
+- `id`: _string_ – Transaction id.
+- `in_msg`: _string_ – In message id.
+- `out_msgs`: _string[]_ – Out message ids.
+- `account_addr`: _string_ – Account address.
+- `total_fees`: _string_ – Transactions total fees.
+- `aborted`: _boolean_ – Aborted flag.
+- `exit_code`?: _number_ – Compute phase exit code.
+
+
+## MessageNode
+```ts
+type MessageNode = {
+    id: string,
+    src_transaction_id?: string,
+    dst_transaction_id?: string,
+    src?: string,
+    dst?: string,
+    value?: string,
+    bounce: boolean,
+    decoded_body?: DecodedMessageBody
+}
+```
+- `id`: _string_ – Message id.
+- `src_transaction_id`?: _string_ – Source transaction id.
+<br>This field is missing for an external inbound messages.
+- `dst_transaction_id`?: _string_ – Destination transaction id.
+<br>This field is missing for an external outbound messages.
+- `src`?: _string_ – Source address.
+- `dst`?: _string_ – Destination address.
+- `value`?: _string_ – Transferred tokens value.
+- `bounce`: _boolean_ – Bounce flag.
+- `decoded_body`?: _[DecodedMessageBody](mod_abi.md#DecodedMessageBody)_ – Decoded body.
+<br>Library tries to decode message body using provided `params.abi_registry`.<br>This field will be missing if none of the provided abi can be used to decode.
 
 
 ## ParamsOfQuery
@@ -759,6 +888,17 @@ type EndpointsSet = {
 - `endpoints`: _string[]_ – List of endpoints provided by server
 
 
+## ResultOfGetEndpoints
+```ts
+type ResultOfGetEndpoints = {
+    query: string,
+    endpoints: string[]
+}
+```
+- `query`: _string_ – Current query endpoint
+- `endpoints`: _string[]_ – List of all endpoints used by client
+
+
 ## ParamsOfQueryCounterparties
 ```ts
 type ParamsOfQueryCounterparties = {
@@ -772,5 +912,30 @@ type ParamsOfQueryCounterparties = {
 - `result`: _string_ – Projection (result) string
 - `first`?: _number_ – Number of counterparties to return
 - `after`?: _string_ – `cursor` field of the last received result
+
+
+## ParamsOfQueryTransactionTree
+```ts
+type ParamsOfQueryTransactionTree = {
+    in_msg: string,
+    abi_registry?: Abi[],
+    timeout?: number
+}
+```
+- `in_msg`: _string_ – Input message id.
+- `abi_registry`?: _[Abi](mod_abi.md#Abi)[]_ – List of contract ABIs that will be used to decode message bodies. Library will try to decode each returned message body using any ABI from the registry.
+- `timeout`?: _number_ – Timeout used to limit waiting time for the missing messages and transaction.
+<br>If some of the following messages and transactions are missing yet<br>The maximum waiting time is regulated by this option.<br><br>Default value is 60000 (1 min).
+
+
+## ResultOfQueryTransactionTree
+```ts
+type ResultOfQueryTransactionTree = {
+    messages: MessageNode[],
+    transactions: TransactionNode[]
+}
+```
+- `messages`: _[MessageNode](mod_net.md#MessageNode)[]_ – Messages.
+- `transactions`: _[TransactionNode](mod_net.md#TransactionNode)[]_ – Transactions.
 
 

@@ -20,11 +20,24 @@ use crate::encoding::{base64_decode, hex_decode};
 use crate::error::ClientResult;
 use base64::URL_SAFE;
 use ed25519_dalek::Keypair;
+use std::fmt::{Debug, Formatter};
+
+pub(crate) fn strip_secret(secret: &str) -> String {
+    const SECRET_SHOW_LEN: usize = 8;
+    if secret.len() <= SECRET_SHOW_LEN {
+        return format!(r#""{}""#, secret);
+    }
+
+    format!(
+        r#""{}..." ({} chars)"#,
+        &secret[..SECRET_SHOW_LEN],
+        secret.len(),
+    )
+}
 
 //----------------------------------------------------------------------------------------- KeyPair
-#[doc(summary = "")]
 ///
-#[derive(Serialize, Deserialize, Clone, Debug, ApiType, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, ApiType, Default, PartialEq)]
 pub struct KeyPair {
     /// Public key - 64 symbols hex string
     pub public: String,
@@ -45,8 +58,13 @@ impl KeyPair {
     }
 }
 
+impl Debug for KeyPair {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, r#"KeyPair {{ public: "{}", secret: {} }}"#, self.public, strip_secret(&self.secret))
+    }
+}
+
 //----------------------------------------------------------- convert_public_key_to_ton_safe_format
-#[doc(summary = "")]
 ///
 #[derive(Serialize, Deserialize, ApiType, Default)]
 pub struct ParamsOfConvertPublicKeyToTonSafeFormat {
@@ -94,7 +112,6 @@ pub fn generate_random_sign_keys(_context: std::sync::Arc<ClientContext>) -> Cli
 
 //-------------------------------------------------------------------------------------------- sign
 
-#[doc(summary = "")]
 ///
 #[derive(Serialize, Deserialize, ApiType, Default)]
 pub struct ParamsOfSign {
@@ -128,7 +145,6 @@ pub fn sign(
 
 //-------------------------------------------------------------------------------- verify_signature
 
-#[doc(summary = "")]
 ///
 #[derive(Serialize, Deserialize, ApiType, Default)]
 pub struct ParamsOfVerifySignature {

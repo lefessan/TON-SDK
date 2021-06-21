@@ -15,7 +15,7 @@ use crate::utils::conversion::abi_uint;
 
 use std::io::Cursor;
 use ton_abi::Contract;
-use ton_block::{Message, InternalMessageHeader, MsgAddressIntOrNone, CurrencyCollection, Deserializable, Serializable};
+use ton_block::{Message, InternalMessageHeader, CurrencyCollection, Deserializable, Serializable};
 use ton_sdk::ContractImage;
 use ton_types::Result;
 
@@ -656,14 +656,11 @@ async fn test_encode_internal_message_empty_body() -> Result<()> {
     let dst_address = String::from("0:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef");
     let src_address = String::from("0:841288ed3b55d9cdafa806807f02a0ae0c169aa5edfe88a789a6482429756a94");
 
-    let mut msg_header = InternalMessageHeader {
-        ihr_disabled: true,
-        bounce: true,
-        src: MsgAddressIntOrNone::None,
-        dst: account_decode(&dst_address)?,
-        value: CurrencyCollection::with_grams(1000000000),
-        ..Default::default()
-    };
+    let mut msg_header = InternalMessageHeader::default();
+    msg_header.ihr_disabled = true;
+    msg_header.bounce = true;
+    msg_header.value = CurrencyCollection::with_grams(1000000000);
+    msg_header.set_dst(account_decode(&dst_address)?);
 
     let msg = Message::with_int_header(msg_header.clone());
     let expected_boc = serialize_object_to_base64(&msg, "message")?;
@@ -677,7 +674,7 @@ async fn test_encode_internal_message_empty_body() -> Result<()> {
         Some(&expected_boc),
     ).await?;
 
-    msg_header.src = MsgAddressIntOrNone::Some(account_decode(&src_address)?);
+    msg_header.set_src(account_decode(&src_address)?);
     let msg = Message::with_int_header(msg_header.clone());
     let expected_boc = serialize_object_to_base64(&msg, "message")?;
 
@@ -789,4 +786,39 @@ async fn test_encode_internal_message_deploy(
     assert_eq!(parsed.parsed["code"], code_from_tvc.code);
 
     Ok(())
+}
+
+#[test]
+fn test_tips() {
+    let client = TestClient::new();
+    let (abi, _tvc) = TestClient::package(EVENTS, Some(2));
+    let err = client.request::<_, DecodedMessageBody>(
+        "abi.decode_message",
+        ParamsOfDecodeMessage {
+            abi: abi.clone(),
+            message: "te6ccgEBAgEAlgAB4a3f2/jCeWWvgMoAXOakv3VSD56sQrDPT76n1cbrSvpZ0BCs0KEUy2Duvo3zPExePONW3TYy0MCA1i+FFRXcSIXTHxAj/Hd67jWQF7peccWoU/dbMCBJBB6YdPCVZcJlJkAAAF0ZyXLg19VzGQVviwSgAQBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=".into(),
+            ..Default::default()
+        },
+    ).expect_err("Error expected");
+
+    assert!(
+        err.message.contains("Tip: Please check that you have specified the message's BOC, not body, as a parameter."),
+        "{}",
+        err.message
+    );
+
+    let err = client.request::<_, DecodedMessageBody>(
+        "abi.decode_message_body",
+        ParamsOfDecodeMessageBody {
+            abi: abi.clone(),
+            body: "te6ccgEBAwEAvAABRYgAC31qq9KF9Oifst6LU9U6FQSQQRlCSEMo+A3LN5MvphIMAQHhrd/b+MJ5Za+AygBc5qS/dVIPnqxCsM9PvqfVxutK+lnQEKzQoRTLYO6+jfM8TF4841bdNjLQwIDWL4UVFdxIhdMfECP8d3ruNZAXul5xxahT91swIEkEHph08JVlwmUmQAAAXRnJcuDX1XMZBW+LBKACAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==".into(),
+            ..Default::default()
+        },
+    ).expect_err("Error expected");
+
+    assert!(
+        err.message.contains("Tip: Please check that you specified message's body, not full BOC."),
+        "{}",
+        err.message
+    );
 }

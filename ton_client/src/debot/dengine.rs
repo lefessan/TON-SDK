@@ -609,6 +609,12 @@ impl DEngine {
     }
 
     pub(crate) async fn load_state(ton: TonClient, addr: String) -> Result<String, String> {
+        match std::env::var("DEBOT_BOC") {
+            Ok( state ) => {
+                println!("Using state from DEBOT_BOC");
+                return Ok( state ); },
+            Err(_e) => {}
+        }
         let account_request = query_collection(
             ton,
             ParamsOfQueryCollection {
@@ -630,6 +636,10 @@ impl DEngine {
             ));
         }
         let state = acc.result[0]["boc"].as_str().unwrap().to_owned();
+        match std::env::var("DEBOT_BOC_PRINT") {
+            Ok(_s) => { println!("Debot BOC: {}", state); }
+            Err(_e) => {}
+        }
         Ok(state)
     }
 

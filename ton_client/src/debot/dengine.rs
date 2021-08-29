@@ -609,6 +609,26 @@ impl DEngine {
     }
 
     pub(crate) async fn load_state(ton: TonClient, addr: String) -> Result<String, String> {
+        let debot_file =
+            match std::env::var("DEBOT_DIR") {
+                Ok( debot_dir ) => {
+                    Ok( format!("{}/DEBOT_{}.boc",&debot_dir,&addr[2..]) )
+                },
+                Err(_e) => { Err("no") }
+            };
+        
+        match debot_file {
+            Ok( ref debot_file ) => {
+                match std::fs::read_to_string ( debot_file ) {
+                    Ok( state ) => {
+                        println!("Using state from DEBOT_DIR");
+                        return Ok( state );
+                    },
+                    Err(_e) => {}
+                }
+            },
+            Err(_e) => {}
+        }
         match std::env::var(format!("DEBOT_{}",&addr[2..])) {
             Ok( state ) => {
                 println!("Using state from DEBOT_BOC");
@@ -638,6 +658,15 @@ impl DEngine {
         let state = acc.result[0]["boc"].as_str().unwrap().to_owned();
         match std::env::var("DEBOT_BOC_PRINT") {
             Ok(_s) => { println!("export DEBOT_{}={}", &addr[2..], state); }
+            Err(_e) => {}
+        }
+        match debot_file {
+            Ok( debot_file ) => {
+                match std::fs::write( debot_file, state.clone() ) {
+                    Ok ( _ ) => {},
+                    Err(_e) => { println!("Could not save BOC"); }
+                }
+            },
             Err(_e) => {}
         }
         Ok(state)

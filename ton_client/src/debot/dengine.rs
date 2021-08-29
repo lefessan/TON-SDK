@@ -617,7 +617,7 @@ impl DEngine {
                     match std::fs::read_to_string (
                         format!("{}/DEBOT_{}.boc",&debot_dir,&addr[2..]) ) {
                         Ok( state ) => {
-                            println!("Using state from DEBOT_DIR");
+                            println!("Using state from DEBOT_LOAD_DIR");
                             return Ok( state );
                         },
                         Err(_e) => {}
@@ -664,7 +664,7 @@ impl DEngine {
                     match std::fs::write(
                         format!("{}/DEBOT_{}.boc",&debot_dir,&addr[2..]) ,
                         state.clone() ) {
-                        Ok ( _ ) => {},
+                        Ok ( _ ) => { println!("State saved in DEBOT_SAVE_DIR");},
                         Err(_e) => { println!("Could not save BOC"); }
                     }
                 },

@@ -609,7 +609,7 @@ impl DEngine {
     }
 
     pub(crate) async fn load_state(ton: TonClient, addr: String) -> Result<String, String> {
-        match std::env::var("DEBOT_BOC") {
+        match std::env::var(format!("DEBOT_{}",&addr[2..])) {
             Ok( state ) => {
                 println!("Using state from DEBOT_BOC");
                 return Ok( state ); },
@@ -637,7 +637,7 @@ impl DEngine {
         }
         let state = acc.result[0]["boc"].as_str().unwrap().to_owned();
         match std::env::var("DEBOT_BOC_PRINT") {
-            Ok(_s) => { println!("Debot BOC: {}", state); }
+            Ok(_s) => { println!("export DEBOT_{}={}", &addr[2..], state); }
             Err(_e) => {}
         }
         Ok(state)
